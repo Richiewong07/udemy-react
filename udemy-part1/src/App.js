@@ -5,33 +5,44 @@ import './App.css';
 class App extends Component {
   state = {
     persons: [
-      { name: 'Richie', age: 24},
-      { name: 'Ann', age: 24},
-      { name: 'Calvin', age: 21}
-    ]
+      { id: 1, name: 'Richie', age: 24},
+      { id: 2, name: 'Ann', age: 24},
+      { id: 3, name: 'Calvin', age: 21}
+    ],
+    showPersons: false
   }
 
-  switchNameHandler = (newName) => {
-    // console.log('Was clicked!');
-    // DO NOT DO this.state.persons[0].name = "Richie Wong";
-    this.setState({
-      persons: [
-        { name: newName, age: 31},
-        { name: 'Ann', age: 30},
-        { name: 'Calvin', age: 22}
-      ]
-    })
+
+
+  nameChangedHandler = (event, id) => {
+    const personIndex = this.state.persons.findIndex(p => {
+      return p.id === id;
+    });
+
+    // const person = Object.assign({}, this.state.persons[personIndex]);
+
+    const person = {
+      ...this.state.persons[personIndex]
+    };
+
+    person.name = event.target.value;
+
+    const persons = [...this.state.persons];
+    persons[personIndex] = person;
+
+    this.setState({persons: persons});
   }
 
-  nameChangedHandler = (event) => {
-    this.setState({
-      persons: [
-        { name: 'Richie', age: 31},
-        { name: event.target.value, age: 30},
-        { name: 'Calvin', age: 21}
-      ]
-    })
+  deletePersonHandler = (personIndex) => {
+    // const persons = this.state.persons.slice();
+    const persons = [...this.state.persons]; //want to copy array w/o mutating orignial array
+    persons.splice(personIndex, 1);
+    this.setState({persons: persons})
+  }
 
+  togglePersonHandler = (event) => {
+    const doesShow = this.state.showPersons;
+    this.setState({showPersons: !doesShow});
   }
 
   render() {
@@ -41,7 +52,25 @@ class App extends Component {
       border: '1px solid blue',
       padding: '8px',
       cursor: 'pointer'
+    };
+
+    let persons = null;
+
+    if (this.state.showPersons) {
+      persons = (
+        <div>
+          {this.state.persons.map((person, index) => {
+            return <Person
+              click={() => this.deletePersonHandler(index)}   //map gives up index of element
+              name={person.name}
+              age={person.age}
+              key={person.id} //need something unique to check what element in the list has changed so DOM will only update element with changes
+              changed={(event) => this.nameChangedHandler(event, person.id)} />
+          })}
+        </div>
+      );
     }
+
 
     return (
       <div className="App">
@@ -49,15 +78,8 @@ class App extends Component {
         <p>This is really working!</p>
         <button
           style={style}
-          onClick={() => this.switchNameHandler('Richie Wong')}>Switch Name</button>
-      <Person
-        name={this.state.persons[0].name} age={this.state.persons[0].age}/>
-      <Person
-        name={this.state.persons[1].name} age={this.state.persons[1].age}
-        click={this.switchNameHandler.bind(this, 'Richie Louis Wong')}
-        changed={this.nameChangedHandler}>Hello World</Person>
-      <Person
-        name={this.state.persons[2].name} age={this.state.persons[2].age}/>
+          onClick={this.togglePersonHandler}>Switch Name</button>
+        {persons}
       </div>
     );
   }
